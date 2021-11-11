@@ -1,0 +1,200 @@
+﻿<Window x:Class="QuantizationApp.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+        xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+        xmlns:local="clr-namespace:QuantizationApp" xmlns:xctk="http://schemas.xceed.com/wpf/xaml/toolkit"
+        mc:Ignorable="d"
+        Title="Ultimate Quantization App" Height="720" MinHeight="720" Width="1280" MinWidth="1280">
+    <Grid>
+        <TabControl x:Name="MainTabControl" SelectionChanged="MainTabControl_SelectionChanged">
+            <TabItem Name="ViewTab" Header="Отображение" IsSelected="True">
+                <TabItem.Content>
+                    <Grid>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="14*"/>
+                            <RowDefinition Height="*"/>
+                        </Grid.RowDefinitions>
+
+                        <Canvas Grid.Row="0" x:Name="MainCanvas" SizeChanged="MainCanvas_SizeChanged" RenderTransformOrigin="0.5,0.5" >
+                            <Canvas.LayoutTransform>
+                                <TransformGroup>
+                                    <ScaleTransform ScaleY="-1" ScaleX="1"/>
+                                    <SkewTransform AngleY="0" AngleX="0"/>
+                                    <RotateTransform Angle="0"/>
+                                    <TranslateTransform/>
+                                </TransformGroup>
+                            </Canvas.LayoutTransform>
+                            <Canvas.RenderTransform>
+                                <ScaleTransform x:Name="MainCanvasScaleTransform" CenterX="0" CenterY="0" ScaleX="1.0" ScaleY="1.0"></ScaleTransform>
+                            </Canvas.RenderTransform>
+                            <Polygon Grid.Row="0" Points="0,0,0,1080,1920,1080,1920,0" MouseWheel="Polygon_MouseWheel" PreviewMouseDown="Polygon_PreviewMouseDown">
+                                <Polygon.Fill>
+                                    <SolidColorBrush Color="White"/>
+                                </Polygon.Fill>
+                            </Polygon>
+
+                            <Canvas x:Name="LevelsCanvas"/>
+                            <Canvas x:Name="FunctionCanvas"/>
+                            <Canvas x:Name="AxisCanvas"/>
+                            <Canvas x:Name="QuantizationCanvas"/>
+                            <Canvas x:Name="AccuracyCanvas"/>
+
+                        </Canvas>
+                        <Grid Grid.Row="1">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Button x:Name="DrawButton" Margin="10" Click="DrawButton_Click">Отрисовать</Button>
+                            <DockPanel Grid.Column="1">
+                                <TextBlock Text="Уровни Квантования" VerticalAlignment="Center"></TextBlock>
+                                <xctk:IntegerUpDown x:Name="IntegerUpDown" Margin="10" FormatString="N0" Increment="1" Minimum="2" Maximum="100" ValueChanged="IntegerUpDown_ValueChanged"/>
+                            </DockPanel>
+                            <DockPanel Grid.Column="2">
+                                <TextBlock Text="Шаг дискретизации" VerticalAlignment="Center"></TextBlock>
+                                <xctk:IntegerUpDown x:Name="SampleIntegerUpDown" Margin="10" FormatString="N0" Increment="10" Minimum="1" Maximum="500" ValueChanged="SampleIntegerUpDown_ValueChanged"/>
+                            </DockPanel>
+                            <ComboBox Name="QuantizationTypeComboBox" Grid.Column="3" Margin="10" SelectedIndex="0" SelectionChanged="QuantizationTypeComboBox_SelectionChanged">
+                                <TextBlock Text="По уровню снизу"/>
+                                <TextBlock Text="По уровню сверху"/>
+                                <TextBlock Text="По среднему уровню"/>
+                            </ComboBox>
+                            <DockPanel Grid.Column="4" VerticalAlignment="Center">
+                                <TextBlock Text="Масштаб: 1 к "/>
+                                <TextBlock Text="1" Margin="0,0,10,0"  Name="ScaleYTextBlock"/>
+                                <Slider Value="1" Minimum="0.1" Maximum="50" Name="ScaleYSlider" ValueChanged="ScaleYSlider_ValueChanged" MouseWheel="ScaleYSlider_MouseWheel"/>
+                            </DockPanel>
+                        </Grid>
+                    </Grid>
+                </TabItem.Content>
+            </TabItem>
+            <TabItem Name="SettingsTab" Header="Настройки функции" >
+                <Grid VerticalAlignment="Top">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*"/>
+                        <ColumnDefinition Width="*"/>
+                    </Grid.ColumnDefinitions>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*"/>
+                        <RowDefinition Height="*"/>
+                    </Grid.RowDefinitions>
+                    <Grid Grid.Row="0" Grid.Column="0">
+                        <TextBlock Margin="1" FontSize="14" Text="Выражение записывается в виде: a + f(b+x), где a и b - константы; + - может быть заменен на знаки -, *, /; f - функция из списка" TextWrapping="Wrap"/>
+                    </Grid>
+                    <Grid Grid.Column="0" Grid.Row="1" VerticalAlignment="Top" Name="FunctionSetupGrid">
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                            <RowDefinition Height="40"/>
+                        </Grid.RowDefinitions>
+                        <Grid Grid.Row="0" Name="FunctionSetupFunction1" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="25" />
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0"  VerticalAlignment="Center" HorizontalAlignment="Center" Text="1."  />
+                            <TextBox Grid.Column="1" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right" Text="0" Width="50" TextChanged="UpdateFunctionPreviewTextChanged" Tag="1"/>
+                            <TextBox Grid.Column="2" VerticalAlignment="Center" Text="+" Width="15" MaxLength="1" TextChanged="UpdateFunctionPreviewTextChanged" Tag="1"/>
+                            <ComboBox Grid.Column="3" VerticalAlignment="Center" SelectedIndex="1" HorizontalAlignment="Right" SelectionChanged="UpdateFunctionPreviewSelectionChanged" Tag="1">
+                                <TextBlock Text="X" />
+                                <TextBlock Text="Sin"/>
+                                <TextBlock Text="Cos"/>
+                            </ComboBox>
+                            <TextBlock Grid.Column="4" FontSize="25"  VerticalAlignment="Center" Text="("/>
+                            <TextBox Grid.Column="5" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right" Text="0" Width="50"  TextChanged="UpdateFunctionPreviewTextChanged" Tag="1" />
+                            <TextBox Grid.Column="6" VerticalAlignment="Center" Text="+" Width="15" MaxLength="1" TextChanged="UpdateFunctionPreviewTextChanged" Tag="1" />
+                            <TextBlock Grid.Column="7" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Text="x"/>
+                            <TextBlock Grid.Column="8" FontSize="25" VerticalAlignment="Center"  Text=")"/>
+                            <Grid Grid.Column="9">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="+" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Width="50" MaxLength="1" TextChanged="UpdateFunctionPreviewTextChanged" Tag="1"/>
+                                <Button Tag="1" Grid.Column="0" Margin="8" Content="Добавить функцию" Click="FunctionSetupAddFunction_Click"/>
+                            </Grid>
+                            <Border Grid.Column="9" BorderBrush="Black" BorderThickness="1" Margin="4,0,20,0"></Border>
+                        </Grid>
+                        <Grid Grid.Row="1" Name="FunctionSetupFunction2" IsEnabled="False">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="25" />
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0"  VerticalAlignment="Center" HorizontalAlignment="Center" Text="2."  />
+                            <TextBox Grid.Column="1" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right" Text="0" Width="50" TextChanged="UpdateFunctionPreviewTextChanged" Tag="2"/>
+                            <TextBox Grid.Column="2" VerticalAlignment="Center" Text="+" Width="15" MaxLength="1" TextChanged="UpdateFunctionPreviewTextChanged" Tag="2"/>
+                            <ComboBox Grid.Column="3" VerticalAlignment="Center" SelectedIndex="1" HorizontalAlignment="Right" SelectionChanged="UpdateFunctionPreviewSelectionChanged" Tag="2">
+                                <TextBlock Text="X" />
+                                <TextBlock Text="Sin"/>
+                                <TextBlock Text="Cos"/>
+                            </ComboBox>
+                            <TextBlock Grid.Column="4" FontSize="25"  VerticalAlignment="Center" Text="("/>
+                            <TextBox Grid.Column="5" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right" Text="0" Width="50"  TextChanged="UpdateFunctionPreviewTextChanged" Tag="2" />
+                            <TextBox Grid.Column="6" VerticalAlignment="Center" Text="+" Width="15" MaxLength="1" TextChanged="UpdateFunctionPreviewTextChanged" Tag="2" />
+                            <TextBlock Grid.Column="7" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Text="x"/>
+                            <TextBlock Grid.Column="8" FontSize="25" VerticalAlignment="Center"  Text=")"/>
+                            <Grid Grid.Column="9">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="2*"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                                <TextBox Text="+" Grid.Column="1" VerticalAlignment="Center" HorizontalAlignment="Center" TextAlignment="Center" Width="50" MaxLength="1" TextChanged="UpdateFunctionPreviewTextChanged" Tag="2"/>
+                                <Button Tag="2" Grid.Column="0" Margin="8" Content="Добавить функцию" Click="FunctionSetupAddFunction_Click"/>
+                            </Grid>
+                            <Border Grid.Column="9" BorderBrush="Black" BorderThickness="1" Margin="4,2,20,2"></Border>
+                        </Grid>
+                        <Grid Grid.Row="2" Name="FunctionSetupFunction3" IsEnabled="False" >
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="30"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="25" />
+                                <ColumnDefinition Width="100"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="50"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="10"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <TextBlock  Grid.Column="0"  VerticalAlignment="Center" HorizontalAlignment="Center" Text="3."  />
+                            <TextBox Grid.Column="1" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right" Text="0" Width="50" TextChanged="UpdateFunctionPreviewTextChanged" Tag="3"/>
+                            <TextBox Grid.Column="2" VerticalAlignment="Center" Text="+" Width="15" MaxLength="1" TextChanged="UpdateFunctionPreviewTextChanged" Tag="3"/>
+                            <ComboBox Grid.Column="3" VerticalAlignment="Center" SelectedIndex="1" HorizontalAlignment="Right" SelectionChanged="UpdateFunctionPreviewSelectionChanged" Tag="3">
+                                <TextBlock Text="X" />
+                                <TextBlock Text="Sin"/>
+                                <TextBlock Text="Cos"/>
+                            </ComboBox>
+                            <TextBlock Grid.Column="4" FontSize="25"  VerticalAlignment="Center" Text="("/>
+                            <TextBox Grid.Column="5" TextAlignment="Right" VerticalAlignment="Center" HorizontalAlignment="Right" Text="0" Width="50"  TextChanged="UpdateFunctionPreviewTextChanged" Tag="3" />
+                            <TextBox Grid.Column="6" VerticalAlignment="Center" Text="+" Width="15" MaxLength="1" TextChanged="UpdateFunctionPreviewTextChanged" Tag="3" />
+                            <TextBlock Grid.Column="7" FontSize="20" VerticalAlignment="Center" HorizontalAlignment="Center" Text="x"/>
+                            <TextBlock Grid.Column="8" FontSize="25" VerticalAlignment="Center"  Text=")"/>
+                        </Grid>
+                    </Grid>
+                    <TextBlock Grid.Row="0" Grid.Column="1" Text="Предпросмотр функции:" VerticalAlignment="Bottom"/>
+                    <TextBlock x:Name="FunctionSetupFunctionPreview" Grid.Row="1" Grid.Column="1" Text="y = (Sin(x))" VerticalAlignment="Top" Margin="5" TextWrapping="Wrap"/>
+                </Grid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</Window>
